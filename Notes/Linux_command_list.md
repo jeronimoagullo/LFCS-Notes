@@ -3,6 +3,7 @@
   - [man](#man)
   - [CTRL+R](#ctrlr)
   - [History](#history)
+  - [fc](#fc)
   - [uname](#uname)
   - [timedatectl](#timedatectl)
   - [uptime](#uptime)
@@ -18,27 +19,30 @@
   - [rmdir](#rmdir)
   - [xargs](#xargs)
   - [find](#find)
+  - [sort](#sort)
 
 # reference command list
 This **reference command list** is a list of the most relevant Linux command defined in just one single line. For more information go bellow to the corresponding section in which typical usage and tips are described.
 
 1. **man**: An interface to the system reference manuals.
 2. **history**: Display the command history to re-use previous commands.
-3. **uname**: Display system information.
-4. **timedatectl**: Control the system time and date. It can be used to get date for NTP testing.
-5. **uptime**: Display how long the system has been runing and how many session are logged.
-6. **ls**: list the directory contents.
-7. **stat**: Display the status of files and directories.
-8. **touch**: Update the acces and modification times of a file. It can be used to create empty files.
-9.  **echo**: Display a text line. Really useful to print environment variable values.
-10. **cd**: Change the current working directory. 
-11. **cp**: Copy files and directories. It can be used to create symbolic links.
-12. **mv**: Move and rename files.
-13. **mkdir**: Create directories.
-14. **rm**: Delete files and directories.
-15. **rmdir**: Delete empty directories.
-16. **xargs**: Read the standard input using it as the argument of a new command.
-17. **find**: Search for files in a directory hierarchy.
+3. **fc**: Allow to modify commands from the history list before executing.
+4. **uname**: Display system information.
+5. **timedatectl**: Control the system time and date. It can be used to get date for NTP testing.
+6. **uptime**: Display how long the system has been runing and how many session are logged.
+7. **ls**: list the directory contents.
+8. **stat**: Display the status of files and directories.
+9. **touch**: Update the acces and modification times of a file. It can be used to create empty files.
+10. **echo**: Display a text line. Really useful to print environment variable values.
+11. **cd**: Change the current working directory. 
+12. **cp**: Copy files and directories. It can be used to create symbolic links.
+13. **mv**: Move and rename files.
+14. **mkdir**: Create directories.
+15. **rm**: Delete files and directories.
+16. **rmdir**: Delete empty directories.
+17. **xargs**: Read the standard input using it as the argument of a new command.
+18. **find**: Search for files in a directory hierarchy.
+19. **sort**: Sort lines of a file.
 
 # 1. Essential commands
 
@@ -67,6 +71,9 @@ It is possible to use the commands of the history output just using the followin
 - To refer to the last argument in a line: `!$`
 - To refer to the n-th command line: `!n`
 - To refer to the most recent command starting with `!string`
+
+## fc
+Along with the `history` command, the `fc` command can be used to modify the desired command from history before executing it. You just need to execute the `fc` command with the history command number, edit it in your editor and save. Then, the edited command will be executed.
 
 ## uname
 Prints different information about the system such as the kernel version, operating system or processor architecture.
@@ -321,3 +328,12 @@ find . -name "*.txt"
 find . -name '*.txt'
 find . -name \*.txt
 ```
+
+## sort
+The `sort` command, as its name depicts, sorts theline of text files. It can be used to sort the output of a command like `ls`. By way of illustration, the following command display the file names of the `/usr/bin` file in alphabetical order regardless of case:
+
+```
+ls /usr/bin | sort -f
+```
+
+
