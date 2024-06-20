@@ -15,6 +15,13 @@ The **Essential commands** section covers the following content according to [LF
   - [commands and expanding options](#commands-and-expanding-options)
   - [Re-using past commands](#re-using-past-commands)
   - [wildcards](#wildcards)
+- [2. Text editor: Vim](#2-text-editor-vim)
+  - [Vim commands](#vim-commands)
+    - [Inserting text](#inserting-text)
+    - [Moving around the text](#moving-around-the-text)
+    - [Deleting, copying, changing and pasting text](#deleting-copying-changing-and-pasting-text)
+    - [Existing vim](#existing-vim)
+    - [other useful commands](#other-useful-commands)
 - [2. Using the shell](#2-using-the-shell)
   - [emacs text editor](#emacs-text-editor)
   - [Navigating command lines](#navigating-command-lines)
@@ -103,7 +110,7 @@ man pages are structured into sections (from 1 to 8):
 7.  **Overview, conventions, and miscellaneous**: Overviews or descriptions of various topics, conventions, and protocols, character set standards, the standard filesystem layout, and miscellaneous other things.
 8.  **System management commands**: Commands like mount(8), many of which only root can execute.
 
-As system administrator, you will be insterested specially in the sections 1, 5 and 8.
+As system administrator, you will be insterested specially in the sections **1, 5 and 8**.
 
 We can look for any command, function or feature trhough all man pages using the `-k` (equivalent to `--apropos`) option and passing a string. This option searches the short manual page descriptions for keywords and display any match:
 ```
@@ -201,7 +208,71 @@ This will copy anything ending with .doc or .pdf to the users home directory. No
 cat myfile | grep '^s.*n$'
 ```
 
+# 2. Text editor: Vim
+There are a lot of text editor avilable for Linux. The more commands are `vi`(or `vim`) and `emacs`. Nowadays, `nano` became quite famous due to its simplicity.
 
+The most relevant, more use and the one that you may find always in any Linux distribution is `vi` or its enhanced version `vim`. It is a bit difficult to learn at the beginning but a really useful and appropiate tool when you got it.
+
+You just need to text `vi` (or `vim`) followed by the file name to edit it (or create the file in case that it doesn't exit yet):
+
+```bash
+$ vi <my_file>
+```
+
+## Vim commands
+In this section I will summarize the most relevant and useful vi commands. 
+
+A couple of notes. Firstly, you can scape of any vi mode pressing **ESC**. Besides, keep in mind that the same command with capital letters has a different meaning, so check out your shift key before entering a command.
+
+### Inserting text
+- **a**: *add*. Input text starting to the right of the cursor.
+- **A**: *add at the end*. Input text starting to the end of the current line.
+- **i** *insert*. Input text starting to the left of the cursor.
+- **I** *insert at beggining*. Input text starting to the left of the cursor.
+- **o**: *open bellow*. Add a line below the current line and put you in *insert* mode.
+- **O**: *open above*. Add a line above the current line and put you in *insert* mode.
+
+### Moving around the text
+- **arrow keys**: the sames with **h**(left), **l** (right), **j** (down), **k** (up).
+- **w**: move the cursor to the beginning of the next word.
+- **b**: move the cursor to the beginning of the previous word.
+- **0(zero)**: move the cursor to the beginning of the current line.
+- **$**: move the cursor to the end of the current line.
+- **H, M, L**: move th ecursor to the upper-left corner, middle line or the lower-left corner on the screen.
+- **Ctrl+f, Ctrl+b**: Pages ahead and back one page at a time, respectively.
+- **Ctrl+d, Ctrl+u**: Pages ahead and back one-half page at a time, respectively.
+
+### Deleting, copying, changing and pasting text
+- **x**: deletes the character under the cursor
+- **d<?>**: deletes some text.
+- **c<?>**: changes (cut) some text.
+- **y<?>**: yanks (copy) some text.
+- **p**: copy text to the left of cursor if words or above line in case of line or paragraphs.
+
+The **<?>** can be replace by any of the following options, applyting the corresponding text (similar to the *moving* commands):
+  - **l** the letter after cursor.
+  - **w** the word after cursor.
+  - **b** the word before cursor.
+  - **)** next sentece and **}** next paragraph.
+  - **dd, cc, yy** action to the current line.
+  - **0**: from the current character to the beginning of the line.
+  - **$**: from the current character to the end of the line.
+
+Besides, the commands can be modified adding a number before. By way of illustration, the command **5cw** changes the next five words.
+
+Some samples: **dd** deletes the current line, **y0** yanks from the cursor to the beginning of the line, **12j** moves down 12 lines.
+
+### Existing vim
+- **:w**: Save file, but you can continue editing.
+- **:wq**: Save file and exit.
+- **:q!**: Quits without saving changes.
+
+### other useful commands
+- **u**: undo previous change, you can use it several times.
+- **Ctrl+R**: Redo after undo, that is, this command undoes your undo.
+- **Ctrl+g**: Display current file information.
+- **/word or ?word**: Search fordward and bardward a word respectively.
+- **period(.)**: You can run the latest command with a period, entering the character `.`.
 
 # 2. Using the shell
 The shell is the most powerfull and useful resource for a Linux administrator. This section covers different hints to enhance and improve the work with the bash shell.
