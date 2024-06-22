@@ -22,18 +22,23 @@ The **Essential commands** section covers the following content according to [LF
     - [Deleting, copying, changing and pasting text](#deleting-copying-changing-and-pasting-text)
     - [Existing vim](#existing-vim)
     - [other useful commands](#other-useful-commands)
-- [2. Using the shell](#2-using-the-shell)
+- [3. Using the shell](#3-using-the-shell)
   - [emacs text editor](#emacs-text-editor)
   - [Navigating command lines](#navigating-command-lines)
   - [Editing command lines](#editing-command-lines)
   - [Cutting and pasting text from within command lines](#cutting-and-pasting-text-from-within-command-lines)
-- [2. Basic Git Operations](#2-basic-git-operations)
+- [4. File manipulation](#4-file-manipulation)
+  - [Finding files](#finding-files)
+    - [Locate command](#locate-command)
+    - [find command](#find-command)
+    - [grep command](#grep-command)
+- [5. Basic Git Operations](#5-basic-git-operations)
   - [Basic Workflow](#basic-workflow)
   - [Understanding the Stage](#understanding-the-stage)
   - [Restoring Modified Files](#restoring-modified-files)
   - [Branching](#branching)
   - [Advanced Commands](#advanced-commands)
-- [3. programs, processes and services](#3-programs-processes-and-services)
+- [6. programs, processes and services](#6-programs-processes-and-services)
   - [Processes](#processes)
     - [Init Process](#init-process)
   - [services managers: systemd](#services-managers-systemd)
@@ -45,9 +50,9 @@ The **Essential commands** section covers the following content according to [LF
       - [`[Service]` section (only for service units)](#service-section-only-for-service-units)
       - [`[Socket]` section (only for socket units)](#socket-section-only-for-socket-units)
   - [Monitor and troubleshoot system performance and services](#monitor-and-troubleshoot-system-performance-and-services)
-- [5. Determine application and service specific constraints](#5-determine-application-and-service-specific-constraints)
-- [6. Troubleshoot diskspace issues](#6-troubleshoot-diskspace-issues)
-- [7. Work with SSL certificates](#7-work-with-ssl-certificates)
+- [7. Determine application and service specific constraints](#7-determine-application-and-service-specific-constraints)
+- [8. Troubleshoot diskspace issues](#8-troubleshoot-diskspace-issues)
+- [9. Work with SSL certificates](#9-work-with-ssl-certificates)
 
 
 # 1. basic concepts and commands
@@ -274,7 +279,7 @@ Some samples: **dd** deletes the current line, **y0** yanks from the cursor to t
 - **/word or ?word**: Search fordward and bardward a word respectively.
 - **period(.)**: You can run the latest command with a period, entering the character `.`.
 
-# 2. Using the shell
+# 3. Using the shell
 The shell is the most powerfull and useful resource for a Linux administrator. This section covers different hints to enhance and improve the work with the bash shell.
 
 ## emacs text editor
@@ -325,9 +330,84 @@ Cutting and pasting text from commands can save a lot of time:
 | Alt`+Y 	|   Paste earlier text  	| Rotate back to previously cut text and paste it 	|
 | Ctrl+C 	|   Delete whole line   	|              Delete the entire line             	|
 
+# 4. File manipulation
+Files are the basis of any Linux system since at the beginning all the configuration relies on plain text files. Thus, knowing how to find the correct file and manipulate it are essential habilities for any Linux System administrator.
 
+## Finding files
+Any Linux system consists on thousand of files. The following commands can help you to find the correct files:
+- `locate`: Find commands by name.
+- `find`: Find files based on different attributes.
+- `grep`: search within text files to find lines in files that contain search text.
 
-# 2. Basic Git Operations
+### Locate command
+The `locate` command relies on the `updatedb` command which runs normally once per day gathering the names of all files throughtout the Linux system into a database.
+
+Since `locate` relies on the mentioned database, it is faster than `find` but it can find only files added before the latest update of the database. Besides, the database is not populated with all files of the system, they are limited by the content of `/etc/updatedb.conf`. Thus, we are not focusing on it.
+
+### find command
+The `find` command is the best tool to search for files. when using `find`, you can specify the folder in which you want to look for, speeding up the search.
+
+By default, `find` will search within the current directory. Besides, it doesn't give you extra persmissions, so an error will raise if you are looking for files or folder without the correct permissions. You can filter between directories and files with the `-d` and `-f` options respectively.
+
+A really useful option is `-ls`, which displays the permissions and owernership of the file:
+
+```bash
+find /etc -ls
+```
+
+You can specify the folder to search and the name of the file with the `-name` option (case sensitive) and `-iname` (case insensitive). Besides, it is posible to use wildchars (Use apostrophes in this case).
+
+```bash
+find <folder> -name <file_name>
+find /etc -name passwd
+find /etc -iname '*passwd*'
+```
+
+It is possible to find by **size** with the `-size` option, the following samples search for files larger than 50Mb and between 500Mb and 5Gb respectively:
+
+```bash
+find /mnt/C -size +50M
+find /mnt/C -size +500M size -5G
+```
+
+You can search by user and group too using the `-user` and `-group` options. Another interesting option is searching by permissions with the `-perm` option and using the numbers as you do with `chmod` coommand. If you are intersted only on the user you can leave as zero the group and other fields. The following samples search all files beloginging to the "ntp" group, search all files within the `/home` directory that can be executed by the user
+
+```bash
+find /etc -group ntp
+find /home -perm -100
+```
+
+Moreover, it is possible to set different search option by boolean operation. For this aim, we can use the options `-and`, `-or`, `-not`. In the case of using the same option (for example, searching for files beloging to two groups), the characters `\(` and `\)` are required between the expressions. For example, the following command searches for all files whose owner is "jeronimo" and are text file with extension `.txt`:
+
+``` bash
+find /home -user jeronimo -and -name '*.txt' -ls
+find /home \( -user jeronimo -or carla\) -and -name '*.txt' -ls
+```
+
+Search by time can be very useful as well. It can be done in minutes `-mmin`, `cmin` or `-amin` or in days `-mtime`, `-ctime`, `-atime`. Where `-m` states for time from latest file's data modification, `-c` for time from modified file's status and `-a` for latest file's access. You can search for the configuration file modified during the previoues 30 minutes, seach for commands modified during latest 5 days (maybe due to a hacker attack) or find for files that were not used during last year to delete them:
+
+```bash
+find /etc -mmin -30
+find /bin /usr/bin /sbin /usr/sbin -ctime -5
+find /var -atime +365
+```
+
+The most powerful use of the find command is the execution of a command for each of the found files. It can be achieved by the `-exec` command which executes the command without asking or the `-ok` which asks for confirmation for each found file (it is great for destructive commands such as `rm`). The following command finds all files larger than 50Mb and display the result along with the size using the `du` command.
+
+```bash
+ find -size +50M -exec du -sh {} \;
+ ```
+
+ ### grep command
+The `grep` command allows you to search files by its content. By default the search is **case-sensitive** if you want to disable this feature, you can use the `-i` option. Besides, by default the output contains the name of the file and the line in which the text was found, you can display only the name of the file with the `-l` option. You can highligth the word with the option `--color`.  
+
+The most typical usage of grep is with the recursive option `-r`. The following command search for "wifi" recursively within the `/etc` folder displaying only the file names and with a noncase-sensitive search:
+
+```
+grep -rli wifi /etc
+```
+
+# 5. Basic Git Operations
 Git is a distributed version control system widely used for tracking changes in source code during software development. It allows multiple developers to collaborate on projects and maintain a complete history of changes.
 
 ## Basic Workflow
@@ -395,7 +475,7 @@ A branch in Git is a separate line of development that represents a series of co
    git rebase <base_branch>
    ```
 
-# 3. programs, processes and services
+# 6. programs, processes and services
 First of all we need to clarify the difference between `program`, `process` and `service`. 
 
 - A **program** is a set of instructions and data to perform a task. Programs may consist of machine level instructions run directly by a CPU or a list of commands to be interpreted by another program.
@@ -509,8 +589,8 @@ $ systemctl daemon-reload
 
 ## Monitor and troubleshoot system performance and services
 
-# 5. Determine application and service specific constraints
+# 7. Determine application and service specific constraints
 
-# 6. Troubleshoot diskspace issues
+# 8. Troubleshoot diskspace issues
 
-# 7. Work with SSL certificates
+# 9. Work with SSL certificates
