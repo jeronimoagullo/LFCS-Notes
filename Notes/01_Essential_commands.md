@@ -38,9 +38,13 @@ The **Essential commands** section covers the following content according to [LF
   - [Restoring Modified Files](#restoring-modified-files)
   - [Branching](#branching)
   - [Advanced Commands](#advanced-commands)
-- [6. programs, processes and services](#6-programs-processes-and-services)
-  - [Processes](#processes)
-    - [Init Process](#init-process)
+- [6. Processes management](#6-processes-management)
+  - [`ps` command](#ps-command)
+  - [`top` command](#top-command)
+  - [killing proceses](#killing-proceses)
+  - [Background and foreground processes](#background-and-foreground-processes)
+  - [Processor priority: `nice` and `renice`](#processor-priority-nice-and-renice)
+  - [Init Process](#init-process)
   - [services managers: systemd](#services-managers-systemd)
     - [Systemd units](#systemd-units)
     - [Systemd unit files](#systemd-unit-files)
@@ -475,26 +479,111 @@ A branch in Git is a separate line of development that represents a series of co
    git rebase <base_branch>
    ```
 
-# 6. programs, processes and services
+# 6. Processes management
 First of all we need to clarify the difference between `program`, `process` and `service`. 
 
 - A **program** is a set of instructions and data to perform a task. Programs may consist of machine level instructions run directly by a CPU or a list of commands to be interpreted by another program.
 -  A **process** is an instance of a program in execution. Besides, it ca be in different states like running or sleeping. Then, the first main difference is that **Linux creates a new process for every program** that is executed or run. Thus, several processes may be executing the same program (even at the same time). Finally, the primary purpose of the operating system is to manage the execution of processes.
 -  A **services** or **daemons** are special processes that run in the background and starts at boot (although they can activate or deactivate during system usage). The most important service managers are `systemd` and `system V`. We will cover then later
 
-## Processes
-To view the list of running processes the `ps` command is used:
+## `ps` command
+To view the list of running processes the `ps` command is used. It most common use is with the `u` option, which displays information such as the process user owner, the status (R running or S sleeping) and the starting time. This command displays the perfectage of CPU and memory as well as the *VSZ* (virtual set size) and the *RSS* (resident set size), which are the size of the image process and the size of the program in memory respectively, both in kilobytes.
+
+```bash
+$ ps u
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+jeronimo     363  0.0  0.0   6312  5304 pts/0    Ss   16:21   0:00 -bash
+jeronimo     442  0.0  0.0   6256  4840 pts/1    S+   16:21   0:00 -bash
+jeronimo     928  0.0  0.0   7488  3192 pts/0    R+   16:22   0:00 ps u
+```
+
+To display all the processes (even the background processes), we can use the options `aux`:
 ```bash
 ps aux
 ```
 
-killing proceses
+It is possible to sort the processes by any of the columns with the `--sort=` option. For example, by the CPU usage:
 
-### Init Process
+```
+ps aux --sort=%cpu
+```
+
+## `top` command
+The `top` command display general information of the system followed by information of each process. This information is updated continously. Pressing different keys, you can perform the following actions:
+
+- **h**: display help
+- **M** and **P**: sort by memory or CPU usage respectively
+- **1**: Show the CPU usage of each CPU
+- **u**: enter the username to display processes of thin user only.
+
+The `top` command allows to interact with processes allowing to renice (pressing **r**) or kill (pressing **k**) them.
+
+## killing proceses
+It is possible to kill (terminate) processes sending them a signal. It is done by the `kill` command. The most relevant and available signals are:
+- **SIGHUP**: It is used to force process to reread its configuration and restart
+- **SIGKILL**: Kill signal
+- **SIGTERM**: Termination signal (tries a "clean" kill)
+- **SIGCONT**: Continoue if stopped
+- **SIGSTOP**: Stop process
+
+Then, you can force the termination of a process by:
+```bash
+kill -SIGKILL <PID>
+```
+
+Besides, you can use the `killall` command which is used to signal processes by name instead of process ID. Be careful since `killall` will terminate all processes whose names match the passed name.
+
+## Background and foreground processes
+Processes can run in the background or the foreground. It can be achieved in different ways.
+
+The easiest way to run a process in the background is writing an ampersand (`&`) at the end of the comand.
+
+**Tip:** you should redirect the output of any background command to a file or to null (`2> /dev/null` for example) to avoid displaying its output while you are working on the terminal.
+
+You can move a running process to background pressing `CTRL+Z`, it will change the process status to "stopped". 
+
+You can check the background processes with the `jobs` command. The `+` sign near the process indicates the latest process to be added to background and the `-` the previous added process. With the `-l` option the PID will be displayed.
+
+You can bring ay of the commands on the `jobs` list to the foreground by the `fg` command indicating its number, for example:
+
+```bash
+$ jobs
+[1]+  Stopped                 vi hola2.txt
+
+$ fg %1
+```
+
+Finally, you can resume in the background a stopped command with the `bg` command:
+
+```bash
+$ bg %5
+```
+
+## Processor priority: `nice` and `renice`
+The priority is a parameter used by the Linux kernel to decide how much CPU time will have a process, that is, which process is the next to be executed.
+
+The priority is measured by the "nice" value:
+- The lower the nice value, the higher the priority.
+- The nice value is a number between -20 and 19, although a regular user can only set a nice value from 0 to 19.
+- The default nice value of a process is zero.
+- A regular user can set the nice value only on the user's own processes.
+
+You can use the `nice` command to run a command with a particular nice value. The following command update the apt packages in the background with a nice value of 10: 
+
+```bash
+nice -n +10 apt upgrade &
+```
+
+Equally, you can modify the nice value of a running process with the `renice` command:
+
+```
+renice -n +2 <PID>
+```
+
+## Init Process
 The `init` process is the first process to be launch during booting process and has the **PID 1**. It is described in `/sbin/init`.
 
 `Init` process is in charged of orphan processes and killing zombie ones.
-
 
 ## services managers: systemd
 The task of controlling the services execution is carried out by a "service manager". The most important service managers are `system V` and `systemd`. While `system V` was the original service manager in UNIX systems, `systemd` is getting more and more popularity in LInux systems and can be found in almost any modern distribution. Some reasons are the flexibility of systemd over system V as well as the possiblity of controlling and loggin the service, as we will see later.
