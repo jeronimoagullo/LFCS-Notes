@@ -27,6 +27,13 @@ The **Essential commands** section covers the following content according to [LF
   - [Navigating command lines](#navigating-command-lines)
   - [Editing command lines](#editing-command-lines)
   - [Cutting and pasting text from within command lines](#cutting-and-pasting-text-from-within-command-lines)
+  - [Shell scripting](#shell-scripting)
+    - [Shell variables](#shell-variables)
+    - [Positional parameters](#positional-parameters)
+    - [programming constructs: loops and conditions](#programming-constructs-loops-and-conditions)
+      - [`if ... then` statement](#if--then-statement)
+      - [The `case` command](#the-case-command)
+      - [loops](#loops)
 - [4. File manipulation](#4-file-manipulation)
   - [Finding files](#finding-files)
     - [Locate command](#locate-command)
@@ -333,6 +340,185 @@ Cutting and pasting text from commands can save a lot of time:
 | Ctrl+Y 	|   Paste recent text   	|           Paste most recently cut text          	|
 | Alt`+Y 	|   Paste earlier text  	| Rotate back to previously cut text and paste it 	|
 | Ctrl+C 	|   Delete whole line   	|              Delete the entire line             	|
+
+## Shell scripting
+Shell scripts are text files which consists of shell command along with a logic that will be executed one by one.
+
+At the beginning of the script the desired shell is specified. The most common shell is `bash`, so we will start our scripts with the following line:
+
+```
+#!/bin/bash
+```
+
+Then, we need to ensure that the file is executable (otherwise use the `chmod` command) and we can execute our script just writing in the shell `./<script name>`. Another alternative is to use the shell as command and pass the name of the script as parameter:
+
+```
+$ bash <script_name>
+```
+
+### Shell variables
+In order to reuse the script, it is common to use *variables*. They are defined by a name and are assigned using the equal sign (`=`) without spaces and can have any data type (string, float, integers, etc.):
+
+```
+NAME=value
+```
+
+Bash uses untyped variables. If you want to perform an arithmetic operation, you should use the `let` command:
+
+```
+NUMBER=256
+let RESULT=$NUMBER/4
+echo $RESULT
+```
+
+**NOTE:** The special notation `$(())` with the `++` operator can be used to increment a variable:
+
+```bash
+I=0
+echo "incremented variable: $((++I))"
+```
+
+Then, you can get the variable value using the dollar sign. Besides, you can use it within quotes:
+
+```bash
+NAME="jero"
+echo $NAME
+echo "my name is $NAME"
+```
+
+You can use also *curly braces* when the value of the parameter needs to be placed next to other text without space.
+
+We can assign the output of a command to a variables using the dollar sign and parenthesis. For example, the following variable stores the architecture of the PC, which can be used to execute different commands based on this information.
+
+```bash
+ARCH=$(uname -i)
+```
+
+**NOTE:** They are some special characters such as `$`, `*` or `"` which have special meanings. You can scape these characters using the backslash (`\`) before using these characters.
+
+You can ask the user to enter a value and save it into a variable with the `read` command:
+
+```bash
+read -p "Please, enter a your name and your age: " name, age
+echo "Your name is $name and you are $age years old"
+```
+
+There are some special rules that can be applied to variables, the most useful rules are the following:
+- `${var:-default_value}`: It is used to check whether the variable `var` is unset or empty, expanding this to `default_value`.
+- `{var#pattern}` and `{var##pattern}`: They chop the shortest and longest match for *pattern* from the front of var's value. They can be used to get the file name from an absolute path (`FILENAME=${FULL_PATH##*/`}).
+- `{var%pattern}` and `{var%%pattern}`: The same as above but chop the end of the var's name. Useful to get a filename without extension (`NAME=${FILE%*.}`).
+
+### Positional parameters
+Positional parameters are special variables which indicates the parameters passed to the script. They are defined by `$0`, `$1`, ... , `$n`. The variable `$0` corresponds to the script name and the other variables are the parameters in order.
+
+Other special variables are:
+- `$#`: Indicates the number of parameters that are passed to the script.
+- `$@`: holds all the parameters entered at the command line.
+
+
+### programming constructs: loops and conditions
+
+#### `if ... then` statement
+the conditional statement consists of the `if`, `else` and `elif` keywords follow by parenthesis with **spaces** and the `; then` keyword. It ends with the `if` keyword. A complete list of the conditional operators can be find with the command `help test`.
+
+The following script asks for a number and determine whether the number is even or odd:
+
+```bash
+read -p "give a number: " num
+
+let resto=$num%2
+
+if [ $resto -eq 1 ] ; then
+        echo "Number $num is odd"
+else
+        echo "Number $num is even"
+fi
+```
+
+The following sample determine whether a path is a folder or a file:
+
+```bash
+if [ -f $FILENAME ] ; then
+  echo "$FILENAME is a file"
+elif [ -d $FILENAME ] ; then
+  echo "$FILENAME is a directory"
+else
+  echo "$FILENAME is neither a file or directory"
+fi
+```
+
+#### The `case` command
+You can use any wildcard (without quotes), the `*` wildcard is used as a catchall similar to the `default` keyword in `switch-case` statement in C.
+
+```bash
+case "VAR" in
+  "value1")
+    {body};;
+  "value2")
+    {body};;
+  *)
+    {default body};;
+esac
+```
+
+The following sample will print the PC architecture based on `uname -m` command:
+
+```bash
+ARC=$(uname -m)
+case $ARC in
+        "arm")
+                echo "ARM architecture"
+                ;;
+        "x86_64")
+                echo "64 bit architecture"
+                ;;
+        "i"???)
+                echo "32 bit architecture"
+                ;;
+        *)
+                echo "unkown architecture"
+                ;;
+esac
+```
+
+#### loops
+The most common use of `for ... do` loop is to iterate over a list, for example:
+
+```bash
+for NUMBER in 0 1 2 3 4 5 ; do
+  echo "iteration number $NUMBER"
+done
+```
+
+Besides, it is possible to use the C-syntax:
+
+``` bash
+LIMIT=5
+for ((i=1; a<= LIMIT; a++)) ; do
+  echo "iteration number $a"
+done
+```
+
+Another alternatives are `while ... do` and `until ... do` loops.
+
+The following examples output the number 0123456789:
+
+```bash
+N=0
+while [ $N -lt 10] ; do
+  echo -n $N
+  let N=$N+1
+done
+```
+
+```bash
+N=0
+until [ $N -eq 10] ; do
+  echo -n $N
+  let N=$N+1
+done
+```
+
 
 # 4. File manipulation
 Files are the basis of any Linux system since at the beginning all the configuration relies on plain text files. Thus, knowing how to find the correct file and manipulate it are essential habilities for any Linux System administrator.
